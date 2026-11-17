@@ -429,7 +429,7 @@ class Controller:
         if not user.get("superuser", False):
             if create_type in ("minecraft_java", "hytale"):
                 assigned_ram = float(user["server_ram_gb"])
-                create_data["mem_min"] = assigned_ram
+                create_data["mem_min"] = 0.5
                 create_data["mem_max"] = assigned_ram
                 if create_type == "hytale":
                     create_data.pop("command", None)

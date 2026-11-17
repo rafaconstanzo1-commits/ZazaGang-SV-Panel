@@ -469,6 +469,11 @@ class PanelHandler(BaseHandler):
                 page_data["server_stats"]["stopped"] = (
                     len(page_data["servers"]) - page_data["server_stats"]["running"]
                 )
+            if superuser:
+                page_data["server_owners"] = {
+                    user.user_id: user.username
+                    for user in self.controller.users.get_all_users()
+                }
 
             # set user server order
             user_order = self.controller.users.get_user_by_id(exec_user["user_id"])

@@ -175,6 +175,7 @@
         "restart": "Restart",
         "sendingCommand": "Sending your command",
         "server": "Server",
+        "serverOwner": "Owner",
         "serverIcon": "Server Icon",
         "servers": "Servers",
         "size": "Server Dir Size",

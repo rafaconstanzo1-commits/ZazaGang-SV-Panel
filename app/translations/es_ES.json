@@ -107,6 +107,7 @@
         "restart": "Reiniciar",
         "sendingCommand": "Enviando tu comando",
         "server": "Servidor",
+        "serverOwner": "Propietario",
         "servers": "Servidores",
         "size": "Tamaño del directorio del servidor",
         "start": "Iniciar",

@@ -3,7 +3,17 @@
 {% block meta %}
 {% end %}
 
+{% block page_styles %}
+{% end %}
+
 {% block title %}Zaza Gang - {{ translate('dashboard', 'dashboard', data['lang']) }}{% end %}
+
+{% block navbar_context %}
+<nav class="dashboard-header-crumb" aria-label="Ruta actual">
+  <span>Inicio</span><span aria-hidden="true">/</span>
+  <strong>{{ translate('dashboard', 'dashboard', data['lang']) }}</strong>
+</nav>
+{% end %}
 
 {% block content %}
 
@@ -23,7 +33,7 @@
   }
 </style>
 
-<div class="content-wrapper">
+<div class="content-wrapper dashboard-page">
 
   <!-- Page Title Header Starts-->
   <div class="row page-title-header">
@@ -56,11 +66,11 @@
     });
   </script>
   {% end %}
+  {% if data['superuser'] %}
   <div class="row">
     <div class="col-md-12 grid-margin">
-      <div class="card">
+      <div class="card dashboard-summary-card">
         <div class="card-body">
-          {% if data['superuser'] %}
           <div class="row">
             <div class="col-xl-4 col-md-5">
               <div class="d-flex">
@@ -155,31 +165,74 @@
               </div>
             </div>
             {% end %}
-          </div>
-          {% else %}
-          <div class="row">
-            <div class="col-12">
-              <h3 class="mb-3 font-weight-semibold">
-                ¡Bienvenido, {{ data['user_data']['username'] }}!
-              </h3>
-              <p class="mb-2"><strong>Dirección pública asignada:</strong>
-                {{ data['user_data'].get('playit_address') or 'No asignada' }}</p>
-              <p class="mb-2"><strong>RAM asignada:</strong>
-                {{ data['user_data']['server_ram_gb'] }} GB</p>
-              <p class="mb-1">Puedes tener hasta 2 servidores en total, incluidos los detenidos.</p>
-              <p class="mb-0">Solo puedes tener 1 servidor activo a la vez.</p>
-            </div>
-          </div>
-          {% end %}
         </div>
       </div>
     </div>
   </div>
+  {% else %}
+  <section class="dashboard-user-hero card dashboard-summary-card"
+    data-user-id="{{data['user_data']['user_id']}}"
+    data-ram-quota="{{data['user_data']['server_ram_gb']}}" aria-labelledby="dashboardWelcome">
+    <div class="card-body">
+      <div class="dashboard-hero-heading">
+        <h2 id="dashboardWelcome">¡Bienvenido, {{ data['user_data']['username'] }}!</h2>
+        <p>Administra tus servidores y consulta los recursos asignados a tu cuenta.</p>
+      </div>
+      <div class="dashboard-kpi-grid">
+        <article class="dashboard-kpi">
+          <div class="dashboard-kpi-heading">
+            <span>Dirección pública asignada</span>
+            <span class="dashboard-kpi-tag">CONEXIÓN</span>
+          </div>
+          <div class="dashboard-address">
+            <code id="dashboardPublicAddress">{{ data['user_data'].get('playit_address') or 'No asignada' }}</code>
+            {% if data['user_data'].get('playit_address') %}
+            <button type="button" class="dashboard-copy-button" id="copyPublicAddress">
+              <i class="ph ph-copy"></i><span>Copiar</span>
+            </button>
+            {% end %}
+          </div>
+          <span class="dashboard-copy-feedback" id="copyAddressFeedback" role="status" aria-live="polite"></span>
+        </article>
+        <article class="dashboard-kpi">
+          <div class="dashboard-kpi-heading">
+            <span>RAM usada / máxima</span>
+            <span class="dashboard-kpi-tag">XMS / XMX</span>
+          </div>
+          <div class="dashboard-kpi-value">
+            <span id="ownedRamUsed">0.0</span> <small>/ {{ data['user_data']['server_ram_gb'] }} GB</small>
+          </div>
+          <div class="progress dashboard-ram-progress" role="progressbar" aria-label="RAM utilizada"
+            aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="progress-bar" id="ownedRamProgress" style="width: 0%"></div>
+          </div>
+          <p class="dashboard-kpi-note">Uso actual frente al máximo por servidor (-Xmx). Inicio predeterminado: -Xms512M.</p>
+        </article>
+        <article class="dashboard-kpi">
+          <div class="dashboard-kpi-heading">
+            <span>Límites de servidores</span>
+            <span class="dashboard-kpi-tag">CUENTA</span>
+          </div>
+          <div class="dashboard-limit-list">
+            <div class="dashboard-limit-item">
+              <span class="dashboard-limit-dot"></span>
+              <span>Servidores creados <strong><span id="ownedServerCount">0</span> / 2</strong></span>
+            </div>
+            <div class="dashboard-limit-item">
+              <span class="dashboard-limit-dot" id="ownedActiveDot"></span>
+              <span>Activos <strong><span id="ownedActiveCount">0</span> / 1</strong></span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+  {% end %}
 
   <div class="row">
     <div class="col-md-12 col-lg-12 grid-margin stretch-card">
       <div class="card">
-        <div class="card-header header-sm d-flex justify-content-between align-items-center">
+        <div class="card-header header-sm d-flex justify-content-between align-items-center dashboard-servers-toolbar">
           <h4 class="card-title"><i class="ph-fill ph-hard-drives"></i> &nbsp;{{ translate('dashboard', 'allServers',
             data['lang']) }}</h4>
           {% if len(data['servers']) > 0 %}
@@ -189,7 +242,8 @@
             data-placement="top"></span>
           {% end %}
           {% end %}
-          <div class="d-flex align-items-center">
+          <div class="d-flex align-items-center dashboard-server-actions">
+            <div id="serverTableSearch"></div>
             {% if data['superuser'] %}
             <a id="stop_all_servers" class="nav-link text-danger" href="javascript:void(0)"
                 style="{% if data['server_stats']['running'] == 0 %}display:none{% end %}">
@@ -215,12 +269,12 @@
           <div class="table-responsive d-none d-sm-block">
             <style id="column-visibility">
               {% if data['superuser'] %}
-              {% set all_columns = ['server', 'serverIcon', 'actions', 'cpuUsage', 'memUsage', 'size', 'players', 'port', 'version', 'status'] %}
+              {% set all_columns = ['server', 'serverIcon', 'actions', 'cpuUsage', 'memUsage', 'size', 'players', 'owner', 'port', 'version', 'status'] %}
               {% else %}
               {% set all_columns = ['server', 'serverIcon', 'actions', 'cpuUsage', 'memUsage', 'size', 'players', 'version', 'status'] %}
               {% end %}
               {% for col in all_columns %}
-                {% if col not in data['dashboard_columns'] %}
+                {% if col not in data['dashboard_columns'] and (col != 'owner' or not data['superuser']) %}
               #servers_table .col-{{ col }} { display: none; }
                 {% end %}
               {% end %}
@@ -236,6 +290,7 @@
                   <th class="col-size" draggable="false">{{ translate('dashboard', 'size', data['lang']) }}</th>
                   <th class="col-players" draggable="false">{{ translate('dashboard', 'players', data['lang']) }}</th>
                   {% if data['superuser'] %}
+                  <th class="col-owner" draggable="false">{{ translate('dashboard', 'serverOwner', data['lang']) }}</th>
                   <th class="col-port" draggable="false">{{ translate('dashboard', 'port', data['lang']) }}</th>
                   {% end %}
                   <th class="col-version" draggable="false">{{ translate('dashboard', 'version', data['lang']) }}</th>
@@ -244,7 +299,10 @@
               </thead>
               <tbody>
                 {% for server in data['servers'] %}
-                <tr id="{{server['server_data']['server_id']}}" draggable="true">
+                <tr id="{{server['server_data']['server_id']}}" draggable="true"
+                  data-owner-id="{{server['server_data'].get('created_by', '')}}"
+                  data-memory-bytes="{{server['stats'].get('mem_raw', 0)}}"
+                  data-running="{% if server['stats']['running'] %}true{% else %}false{% end %}">
                   <td class="col-server" draggable="false">
                     <i class="ph-fill ph-hard-drives"></i>
                     {% if server['alert'] %}
@@ -378,6 +436,16 @@
                       data-count="{{server['server_data']['count_players']}}"></span>
                   </td>
                   {% if data['superuser'] %}
+                  <td class="col-owner" draggable="false">
+                    {% set owner_id = server['server_data'].get('created_by') %}
+                    {% if owner_id in data['server_owners'] %}
+                    <span class="dashboard-owner-name">{{ data['server_owners'][owner_id] }}</span>
+                    {% elif owner_id %}
+                    #{{ owner_id }}
+                    {% else %}
+                    -
+                    {% end %}
+                  </td>
                   <td class="col-port" draggable="false" id="server_port_{{server['server_data']['server_id']}}">
                     {{ server['stats'].get('game_port', server['stats']['server_port']) }}
                   </td>
@@ -414,6 +482,16 @@
             <td class="col-size"></td>
             <td class="col-players"></td>
             {% if data['superuser'] %}
+            <td class="col-owner">
+              {% set owner_id = server.get('created_by') %}
+              {% if owner_id in data['server_owners'] %}
+              <span class="dashboard-owner-name">{{ data['server_owners'][owner_id] }}</span>
+              {% elif owner_id %}
+              #{{ owner_id }}
+              {% else %}
+              -
+              {% end %}
+            </td>
             <td class="col-port"></td>
             {% end %}
             <td class="col-version"></td>
@@ -630,6 +708,24 @@
                       </div>
                     </div>
                   </div>
+                  {% if data['superuser'] %}
+                  <br />
+                  <div class="row">
+                    <div class="col-12">
+                      <h6>{{ translate('dashboard', 'serverOwner', data['lang']) }}</h6>
+                      <div class="dashboard-owner-name">
+                        {% set owner_id = server['server_data'].get('created_by') %}
+                        {% if owner_id in data['server_owners'] %}
+                        {{ data['server_owners'][owner_id] }}
+                        {% elif owner_id %}
+                        #{{ owner_id }}
+                        {% else %}
+                        -
+                        {% end %}
+                      </div>
+                    </div>
+                  </div>
+                  {% end %}
                   <br />
                   <div class="row">
                     {% if data['superuser'] %}
@@ -814,6 +910,54 @@
     document.querySelector('.dynamicMsg').appendChild(parentEl);
   }
 
+  function parseMemoryBytes(value) {
+    const match = String(value).trim().match(/^(-?\d+(?:\.\d+)?)\s*([KMGTPEZY]?)B?$/i);
+    if (!match) {
+      return 0;
+    }
+
+    const unitPower = 'BKMGTPEZY'.indexOf(match[2].toUpperCase());
+    return Number(match[1]) * (1024 ** unitPower);
+  }
+
+  function updateOwnedServerSummary() {
+    const summary = document.querySelector('.dashboard-user-hero');
+    if (!summary) {
+      return;
+    }
+
+    const userId = summary.getAttribute('data-user-id');
+    const ramQuota = Number(summary.getAttribute('data-ram-quota'));
+    const ownedRows = Array.from(document.querySelectorAll('#servers_table tbody tr[data-owner-id]'))
+      .filter(function (row) {
+        return row.getAttribute('data-owner-id') === userId;
+      });
+    const activeCount = ownedRows.filter(function (row) {
+      return row.getAttribute('data-running') === 'true';
+    }).length;
+
+    document.getElementById('ownedServerCount').textContent = ownedRows.length;
+    document.getElementById('ownedActiveCount').textContent = activeCount;
+    document.getElementById('ownedActiveDot').classList.toggle('is-active', activeCount > 0);
+
+    const usedBytes = ownedRows.reduce(function (total, row) {
+      if (row.getAttribute('data-running') !== 'true') {
+        return total;
+      }
+      const memoryBytes = Number(row.getAttribute('data-memory-bytes'));
+      return total + (Number.isFinite(memoryBytes) && memoryBytes > 0 ? memoryBytes : 0);
+    }, 0);
+    const quotaBytes = Number.isFinite(ramQuota) && ramQuota > 0 ? ramQuota * 1024 ** 3 : 0;
+    const usedGb = usedBytes / (1024 ** 3);
+    const usedPercent = quotaBytes > 0 ? Math.min((usedBytes / quotaBytes) * 100, 100) : 0;
+    const ramProgress = document.getElementById('ownedRamProgress');
+    document.getElementById('ownedRamUsed').textContent = usedGb.toFixed(1);
+    ramProgress.style.width = usedPercent + '%';
+    ramProgress.parentElement.setAttribute('aria-valuenow', String(Math.round(usedPercent)));
+    ramProgress.classList.toggle('is-warning', usedPercent >= 70 && usedPercent < 90);
+    ramProgress.classList.toggle('is-danger', usedPercent >= 90);
+  }
+
   function update_one_server_status(server) {
     /* Mobile view update */
     server_cpu = document.getElementById('server_cpu_' + server.id);
@@ -949,6 +1093,18 @@
     }
 
     server_online_status.innerHTML = online_status;
+
+    const serverRow = document.getElementById(String(server.id));
+    if (serverRow) {
+      serverRow.setAttribute('data-running', String(Boolean(server.running)));
+      const memoryBytes = server.mem_raw !== undefined && server.mem_raw !== null
+        ? Number(server.mem_raw)
+        : parseMemoryBytes(server.mem);
+      if (Number.isFinite(memoryBytes)) {
+        serverRow.setAttribute('data-memory-bytes', String(memoryBytes));
+      }
+      updateOwnedServerSummary();
+    }
   }
 
   function update_servers_status(data) {
@@ -963,6 +1119,49 @@
   $(document).ready(function () {
     console.log('ready for JS!')
     updateAccountStartButtons();
+    updateOwnedServerSummary();
+
+    const copyAddressButton = document.getElementById('copyPublicAddress');
+    if (copyAddressButton) {
+      copyAddressButton.addEventListener('click', function () {
+        const address = document.getElementById('dashboardPublicAddress').textContent.trim();
+        const feedback = document.getElementById('copyAddressFeedback');
+        function fallbackCopy() {
+          const helper = document.createElement('textarea');
+          helper.value = address;
+          helper.setAttribute('readonly', '');
+          helper.style.position = 'fixed';
+          helper.style.opacity = '0';
+          document.body.appendChild(helper);
+          helper.select();
+          let copied = false;
+          try {
+            copied = document.execCommand('copy');
+          } finally {
+            document.body.removeChild(helper);
+          }
+          if (!copied) {
+            return Promise.reject(new Error('Clipboard copy was rejected'));
+          }
+          return Promise.resolve();
+        }
+
+        let copyOperation;
+        try {
+          copyOperation = navigator.clipboard && window.isSecureContext
+            ? navigator.clipboard.writeText(address).catch(fallbackCopy)
+            : fallbackCopy();
+        } catch (error) {
+          copyOperation = Promise.reject(error);
+        }
+        Promise.resolve(copyOperation).then(function () {
+          feedback.textContent = 'Dirección copiada.';
+        }).catch(function (error) {
+          console.error('Failed to copy the public address', error);
+          feedback.textContent = 'No se pudo copiar. Selecciona la dirección para copiarla manualmente.';
+        });
+      });
+    }
 
     $(".play_button").click(function (event) {
       if ($(this).attr("aria-disabled") === "true") {
@@ -1282,6 +1481,16 @@
       "paging": false,
       "autoWidth": false
     });
+    const searchContainer = document.getElementById('serverTableSearch');
+    const tableFilter = document.getElementById('servers_table_filter');
+    if (searchContainer && tableFilter) {
+      searchContainer.appendChild(tableFilter);
+      const searchInput = tableFilter.querySelector('input');
+      if (searchInput) {
+        searchInput.placeholder = 'Buscar servidor...';
+        searchInput.setAttribute('aria-label', 'Buscar servidor');
+      }
+    }
     // DataTables sets overflow:hidden on the wrapper after init completes.
     // Defer override so table-responsive can provide horizontal scrolling.
     setTimeout(function() {
@@ -1304,6 +1513,7 @@
       { key: 'size', label: "{{ translate('dashboard', 'size', data['lang']) }}", locked: false },
       { key: 'players', label: "{{ translate('dashboard', 'players', data['lang']) }}", locked: false },
       {% if data['superuser'] %}
+      { key: 'owner', label: "{{ translate('dashboard', 'serverOwner', data['lang']) }}", locked: true },
       { key: 'port', label: "{{ translate('dashboard', 'port', data['lang']) }}", locked: false },
       {% end %}
       { key: 'version', label: "{{ translate('dashboard', 'version', data['lang']) }}", locked: false },
@@ -1311,6 +1521,9 @@
     ];
 
     const visibleColumns = new Set({% raw json_encode(data['dashboard_columns']) %});
+    {% if data['superuser'] %}
+    visibleColumns.add('owner');
+    {% end %}
 
     // Build dropdown HTML
     let dropdownHtml = '<div class="column-settings">' +

@@ -30,7 +30,7 @@ def _prepare_server_data(monkeypatch, user, payload):
     return controller.prepare_server_creation_data(payload, user["user_id"])
 
 
-def test_java_server_uses_profile_port_and_ram(monkeypatch):
+def test_java_server_uses_profile_port_and_account_ram_maximum(monkeypatch):
     user = {
         "user_id": 7,
         "server_port": 25570,
@@ -56,11 +56,11 @@ def test_java_server_uses_profile_port_and_ram(monkeypatch):
     assert prepared["minecraft_java_monitoring_data"]["port"] == 25570
     java_data = prepared["minecraft_java_create_data"]["download_jar_create_data"]
     assert java_data["server_properties_port"] == 25570
-    assert java_data["mem_min"] == 3.0
+    assert java_data["mem_min"] == 0.5
     assert java_data["mem_max"] == 3.0
 
 
-def test_hytale_monitor_uses_assigned_game_port_and_ram(monkeypatch):
+def test_hytale_monitor_uses_assigned_game_port_and_account_ram_maximum(monkeypatch):
     user = {
         "user_id": 7,
         "server_port": 25570,
@@ -83,7 +83,7 @@ def test_hytale_monitor_uses_assigned_game_port_and_ram(monkeypatch):
 
     assert prepared["hytale_monitoring_data"]["port"] == 25573
     hytale_data = prepared["hytale_create_data"]["download_exe_create_data"]
-    assert hytale_data["mem_min"] == 3.0
+    assert hytale_data["mem_min"] == 0.5
     assert hytale_data["mem_max"] == 3.0
     assert "command" not in hytale_data
 

@@ -66,8 +66,9 @@
                     <div class="form-group">
                       <label for="min_memory">{{ translate('serverWizard', 'minMem', data['lang']) }} <small> - {{
                           translate('serverWizard', 'sizeInGB', data['lang']) }}</small></label>
-                      <input type="number" class="form-control" id="min_memory" name="mem_min" value="1" step="0.5"
+                      <input type="number" class="form-control" id="min_memory" name="mem_min" value="0.5" step="0.5"
                         min="0.5" required>
+                      <small class="text-muted">Predeterminado: -Xms512M</small>
                     </div>
                   </div>
 
@@ -81,7 +82,7 @@
                   </div>
                   {% else %}
                   <div class="col-sm-8">
-                    <p class="form-group mb-0">RAM asignada a este servidor: {{ data['user_data']['server_ram_gb'] }} GB</p>
+                    <p class="form-group mb-0">RAM máxima por servidor (-Xmx): {{ data['user_data']['server_ram_gb'] }} GB. Inicio predeterminado: -Xms512M.</p>
                   </div>
                   {% end %}
 
@@ -182,8 +183,9 @@
                   <div class="form-group">
                     <label for="min_memory1">{{ translate('serverWizard', 'minMem', data['lang']) }} <small> - {{
                         translate('serverWizard', 'sizeInGB', data['lang']) }}</small></label>
-                    <input type="number" class="form-control" id="min_memory1" name="mem_min" value="1" step="0.5"
+                    <input type="number" class="form-control" id="min_memory1" name="mem_min" value="0.5" step="0.5"
                       min="0.5" required>
+                    <small class="text-muted">Predeterminado: -Xms512M</small>
                   </div>
                 </div>
                 <div class="col-sm-4">
@@ -196,7 +198,7 @@
                 </div>
                 {% else %}
                 <div class="col-sm-8">
-                  <p class="form-group mb-0">RAM asignada a este servidor: {{ data['user_data']['server_ram_gb'] }} GB</p>
+                  <p class="form-group mb-0">RAM máxima por servidor (-Xmx): {{ data['user_data']['server_ram_gb'] }} GB. Inicio predeterminado: -Xms512M.</p>
                 </div>
                 {% end %}
 
