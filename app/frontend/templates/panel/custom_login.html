@@ -1,0 +1,382 @@
+{% extends ../base.html %}
+
+{% block meta %}
+{% end %}
+
+{% block title %}Zaza Gang - {{ translate('customLogin', 'pageTitle', data['lang']) }}{% end %}
+
+{% block content %}
+
+<div class="content-wrapper">
+  <!-- Screen-reader announcements for async apply/delete/save (visual feedback
+       is the button checkmark; this gives AT users an equivalent cue). -->
+  <div id="a11y_status" class="sr-only" role="status" aria-live="polite"></div>
+  <!-- Page Title Header Starts-->
+  <div class="row page-title-header">
+    <div class="col-12">
+      <div class="page-header">
+        <h4 class="page-title">
+          {{ translate('panelConfig', 'title', data['lang']) }}
+          <br />
+        </h4>
+      </div>
+    </div>
+  </div>
+  <!-- Page Title Header Ends-->
+
+  <div class="row">
+    <div class="col-md-12 grid-margin">
+      <div class="card">
+        <div class="card-body">
+
+
+          {% if data['superuser'] %}
+          <span class="d-none d-sm-block">
+            {% include "parts/crafty_config_list.html %}
+          </span>
+          <span class="d-block d-sm-none">
+            {% include "parts/m_crafty_config_list.html %}
+          </span>
+          {% end %}
+
+          <!-- Page Title Header Starts-->
+          <div class="row page-title-header">
+            <div class="col-12">
+              <div class="page-header">
+                <!-- TODO: Translate the following -->
+                <h4 class="page-title">{{ translate('customLogin', 'customLoginPage', data['lang']) }}</h4>
+              </div>
+            </div>
+
+          </div>
+          <!-- Page Title Header Ends-->
+
+          <div class="row">
+            <div class="col-md-12 col-lg-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4>{{ translate('customLogin', 'embedTitle', data['lang']) }}</h4>
+                  <hr class="section-divider">
+                  <p>{{ translate('customLogin', 'embedHelp', data['lang']) }}</p>
+                  <form id="embed_form">
+                    <div class="form-group row">
+                      <label class="col-sm-3 col-form-label" for="og_enabled">{{ translate('customLogin', 'embedEnabled', data['lang']) }}</label>
+                      <div class="col-sm-9">
+                        <input type="checkbox" id="og_enabled" name="og_enabled" {% if data['embed_settings']['enabled'] %}checked{% end %}>
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label class="col-sm-3 col-form-label" for="og_title">{{ translate('customLogin', 'embedTitleField', data['lang']) }}</label>
+                      <div class="col-sm-9">
+                        <input type="text" class="form-control" id="og_title" name="og_title" maxlength="255" value="{{ data['embed_settings']['title'] }}" placeholder="Zaza Gang">
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label class="col-sm-3 col-form-label" for="og_description">{{ translate('customLogin', 'embedDescriptionField', data['lang']) }}</label>
+                      <div class="col-sm-9">
+                        <input type="text" class="form-control" id="og_description" name="og_description" maxlength="255" value="{{ data['embed_settings']['description'] }}">
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label class="col-sm-3 col-form-label" for="og_color">{{ translate('customLogin', 'embedColorField', data['lang']) }}</label>
+                      <div class="col-sm-9">
+                        <input type="color" class="form-control" id="og_color" name="og_color" value="{{ data['embed_settings']['color'] }}">
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <button class="btn btn-outline-success save-embed" type="button">{{ translate('customLogin', 'apply', data['lang']) }}</button>
+                      <small id="embed_unsaved" class="text-warning d-none ml-2"><i class="ph ph-warning-circle"></i> {{ translate('customLogin', 'unsavedChanges', data['lang']) }}</small>
+                    </div>
+                    {% set picker = {
+                      'id': 'embed',
+                      'label': translate('customLogin', 'embedImageSelect', data['lang']),
+                      'options': data['embed_images'],
+                      'selected': data['embed_settings']['image'],
+                      'default_label': translate('customLogin', 'embedImageDefault', data['lang']),
+                      'default_value': '',
+                      'recommended': '1200x630',
+                      'thumb_src': ('/static/assets/images/embed/' + data['embed_settings']['image']) if data['embed_settings']['image'] else '/static/assets/images/brand/zaza-icon.png',
+                      'upload_type': 'embed',
+                      'endpoint': '/api/v2/crafty/config/embed',
+                      'delete_endpoint': '/api/v2/crafty/config/embed',
+                      'payload_key': 'og_image',
+                      'image_base': '/static/assets/images/embed',
+                      'stock_src': '/static/assets/images/brand/zaza-icon.png',
+                    } %}
+                    {% include "parts/image_picker.html" %}
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
+<!-- content-wrapper ends -->
+
+{% end %}
+
+{% block js %}
+<script>
+  $(document).ready(function () {
+    $('[data-toggle="popover"]').popover();
+    if ($(window).width() < 1000) {
+      $('.too_small').popover("show");
+      $('.too_small2').popover("show");
+    }
+
+  });
+  $(window).ready(function () {
+    $('body').click(function () {
+      $('.too_small').popover("hide");
+      $('.too_small2').popover("hide");
+    });
+  });
+  $(window).resize(function () {
+    // This will execute whenever the window is resized
+    if ($(window).width() < 1000) {
+      $('.too_small').popover("show");
+    }
+    else {
+      $('.too_small').popover("hide");
+    } // New width
+    if ($(window).width() < 1000) {
+      $('.too_small2').popover("show");
+    }
+    else {
+      $('.too_small2').popover("hide");
+    } // New width
+  });
+</script>
+<script>
+
+  $(document).ready(function () {
+    console.log('ready for JS!')
+
+  });
+
+  $(".show_button").click(function () {
+    console.log("showing key");
+    api_key = $(this).attr("data-id");
+    bootbox.alert({
+      backdrop: true,
+      title: '',
+      message: api_key,
+    });
+  });
+
+  // Shown when Delete is clicked while the default (stock) image is selected.
+  const NOTHING_TO_DELETE = "{{ translate('customLogin', 'nothingToDelete', data['lang']) }}";
+  const CHANGE_APPLIED = "{{ translate('customLogin', 'changeApplied', data['lang']) }}";
+  const IMAGE_DELETED = "{{ translate('customLogin', 'imageDeleted', data['lang']) }}";
+
+  // Announce a transient status to assistive tech via the polite live region.
+  // Clear first so the same message announced twice in a row still fires.
+  function announce(message) {
+    const region = $('#a11y_status');
+    region.text('');
+    setTimeout(function () { region.text(message); }, 50);
+  }
+
+  // Shared button feedback: spinner while busy, checkmark on success, restore on failure.
+  function buttonSpinner(button) {
+    const label = button.html();
+    button.prop('disabled', true).html('<i class="ph ph-spinner-gap ph-spin"></i> ' + label);
+    return label;
+  }
+  function buttonSuccess(button, label) {
+    button.html('<i class="ph ph-check"></i> ' + label);
+    setTimeout(function () {
+      button.find('i').fadeOut(600, function () {
+        button.prop('disabled', false).html(label);
+      });
+    }, 2000);
+  }
+  function buttonRestore(button, label) {
+    button.prop('disabled', false).html(label);
+  }
+
+  // Generic image delete: DELETE to endpoint with payload, run onSuccess on ok, button feedback throughout.
+  async function deleteImage(button, endpoint, payload, onSuccess) {
+    const label = buttonSpinner(button);
+    const token = getCookie("_xsrf");
+    const res = await fetch(endpoint, {
+      method: 'DELETE',
+      headers: { 'X-XSRFToken': token },
+      body: JSON.stringify(payload),
+    });
+    const responseData = await res.json();
+    if (responseData.status === "ok") {
+      onSuccess();
+      buttonSuccess(button, label);
+      announce(IMAGE_DELETED);
+    } else {
+      buttonRestore(button, label);
+      bootbox.alert({ title: responseData.error, message: responseData.error_data });
+    }
+  }
+
+  // Show/hide a section's "not applied yet" hint by its hint element id
+  function setDirty(hintId, dirty) {
+    $('#' + hintId).toggleClass('d-none', !dirty);
+  }
+
+  // Make an element accept an image file dropped onto it, routing it to onFile.
+  function enableDropZone(zoneSelector, onFile) {
+    const zone = $(zoneSelector);
+    zone.on('dragenter dragover', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      zone.addClass('drag-over');
+    });
+    zone.on('dragleave dragend', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      zone.removeClass('drag-over');
+    });
+    zone.on('drop', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      zone.removeClass('drag-over');
+      const file = e.originalEvent.dataTransfer.files[0];
+      if (file) { onFile(file); }
+    });
+  }
+
+  // Don't let a file dropped outside a drop zone navigate the page away.
+  $(document).on('dragover drop', function (e) { e.preventDefault(); });
+
+  // ----- Generic image pickers (instant apply) -----
+  $('.image-picker').each(function () {
+    const root = $(this);
+    const id = root.data('id');
+    const uploadType = root.data('upload-type');
+    const endpoint = root.data('endpoint');
+    const deleteEndpoint = root.data('delete-endpoint');
+    const payloadKey = root.data('payload-key');
+    const imageBase = root.data('image-base');
+    const stockSrc = root.data('stock-src');
+    const defaultValue = String(root.data('default-value'));
+    const previewExtra = (root.data('preview-extra') || '').toString();
+
+    const $select = $('#' + id + '_select');
+    const $file = $('#' + id + '_file');
+    const $upload = root.find('.upload-image-picker');
+
+    // <img> targets this picker updates: thumbnail + any extra preview.
+    const targets = previewExtra
+      ? ['#' + id + '_thumb', previewExtra]
+      : ['#' + id + '_thumb'];
+    function setPreview(src) {
+      targets.forEach(function (sel) { $(sel).attr('src', src); });
+    }
+    // Preview src for a dropdown value (stock when it's the default).
+    function srcFor(value) {
+      return value && value !== defaultValue ? imageBase + '/' + value : stockSrc;
+    }
+    // PATCH the chosen filename (plus any per-type extras) to persist it.
+    async function applyImage(button, name) {
+      const label = buttonSpinner(button);
+      const payload = {};
+      payload[payloadKey] = name;
+      const token = getCookie("_xsrf");
+      const res = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: { 'X-XSRFToken': token },
+        body: JSON.stringify(payload),
+      });
+      const responseData = await res.json();
+      if (responseData.status === "ok") {
+        buttonSuccess(button, label);
+        announce(CHANGE_APPLIED);
+      } else {
+        buttonRestore(button, label);
+        bootbox.alert({ title: responseData.error, message: responseData.error_data });
+      }
+    }
+
+    // Upload button opens the hidden file dialog.
+    $upload.click(function () { $file.click(); });
+
+    // Pick or drop a file: preview, upload, then apply instantly.
+    async function handleFile(file) {
+      if (!file) { return; }
+      const reader = new FileReader();
+      reader.onload = function (e) { setPreview(e.target.result); };
+      reader.readAsDataURL(file);
+      const ok = await uploadFile(uploadType, file, null, 0, null, null, id + '_progress');
+      if (!ok) { return; }  // uploadFile alerts on failure
+      if (!$select.find('option[value="' + file.name + '"]').length) {
+        $select.append(new Option(file.name, file.name));
+      }
+      $select.val(file.name);
+      await applyImage($upload, file.name);
+    }
+    $file.change(function () { handleFile(this.files[0]); });
+    enableDropZone('#' + id + '_thumb', handleFile);
+
+    // Choosing an existing image previews + applies instantly.
+    $select.change(function () {
+      const value = $select.val();
+      setPreview(srcFor(value));
+      applyImage($upload, value);
+    });
+
+    // Delete the selected uploaded image (guard against the stock default).
+    root.find('.delete-image-picker').click(function () {
+      const button = $(this);
+      const name = $select.val();
+      if (!name || name === defaultValue) {
+        bootbox.alert(NOTHING_TO_DELETE);
+        return;
+      }
+      const payload = {};
+      payload[payloadKey] = name;
+      deleteImage(button, deleteEndpoint, payload, function () {
+        $select.find('option[value="' + name + '"]').remove();
+        $select.val(defaultValue);
+        setPreview(stockSrc);
+      });
+    });
+  });
+
+  // ----- Embed metadata (image is handled by the picker above) -----
+  // Only the og-* fields dirty the form; the picker's select is excluded.
+  $('#embed_form').on('change input', '#og_enabled, #og_title, #og_description, #og_color', function () {
+    setDirty('embed_unsaved', true);
+  });
+
+  $('.save-embed').click(async function () {
+    const button = $(this);
+    const label = buttonSpinner(button);
+    const payload = {
+      og_enabled: $('#og_enabled').is(':checked'),
+      og_title: $('#og_title').val(),
+      og_description: $('#og_description').val(),
+      og_color: $('#og_color').val(),
+    };
+    const token = getCookie("_xsrf");
+    const res = await fetch(`/api/v2/crafty/config/embed`, {
+      method: 'PATCH',
+      headers: { 'X-XSRFToken': token },
+      body: JSON.stringify(payload),
+    });
+    const responseData = await res.json();
+    if (responseData.status === "ok") {
+      setDirty('embed_unsaved', false);
+      buttonSuccess(button, label);
+      announce(CHANGE_APPLIED);
+    } else {
+      buttonRestore(button, label);
+      bootbox.alert({ title: responseData.error, message: responseData.error_data });
+    }
+  });
+
+</script>
+<script src="../../static/assets/js/shared/upload.js"></script>
+{% end %}

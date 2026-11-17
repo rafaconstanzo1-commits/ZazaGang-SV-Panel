@@ -1,0 +1,23 @@
+{
+  "background_color": "#111b13",
+  "description": "Zaza Gang permite administrar servidores de Minecraft desde una interfaz sencilla.",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Zaza Gang",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Zaza Gang",
+  "start_url": "/",
+  "theme_color": "#4d892d",
+  "categories": ["utilities"],
+  "icons": [
+    {
+      "src": "/static/assets/images/brand/zaza-icon.png",
+      "type": "image/png",
+      "sizes": "768x768",
+      "purpose": "any"
+    }
+  ],
+  "lang": "es",
+  "prefer_related_applications": false
+}
